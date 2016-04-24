@@ -8,6 +8,7 @@
 #include <sensor_msgs/CompressedImage.h>
 
 #include <sensor_msgs/image_encodings.h>
+#include <opencv/highgui.h>
 #include <cv_bridge/cv_bridge.h>
 
 #include "boost/filesystem.hpp"
@@ -38,18 +39,18 @@ int main(int argc, char **argv) {
 
     // Subscribe to our img and imu topics
     ros::Subscriber sub_img = nh.subscribe("/camera/image_raw", 1000, image_callback);
-    ros::Subscriber sub_imu = nh.subscribe("/imu/data", 1000, imu_callback);
+    ros::Subscriber sub_imu = nh.subscribe("/imu_vn_100/imu", 1000, imu_callback);
 
     // Create our folder timestamp
     char filename[128];
-    std::sprintf(filename, "recording_%f", ros::Time::now().toSec());
+    std::sprintf(filename, "%ld", ros::Time::now().toNSec());
 
     // Create folder and file paths
     folder_root = ros::package::getPath("img_imu_record")+"/recordings/"+filename+"/";
     folder_images = ros::package::getPath("img_imu_record")+"/recordings/"+filename+"/images/";
     folder_data = ros::package::getPath("img_imu_record")+"/recordings/"+filename+"/data/";
     data_imus = ros::package::getPath("img_imu_record")+"/recordings/"+filename+"/data/imu_data.txt";
-    data_imgs = ros::package::getPath("img_imu_record")+"/recordings/"+filename+"/data/imu_data.txt";
+    data_imgs = ros::package::getPath("img_imu_record")+"/recordings/"+filename+"/data/img_data.txt";
 
     // Create the folders
     create_directory(folder_root);
@@ -59,6 +60,10 @@ int main(int argc, char **argv) {
     // Open our imu file and keep it open
     outfile_imu.open(data_imus.c_str(), std::ios_base::app);
     outfile_img.open(data_imgs.c_str(), std::ios_base::app);
+
+    ROS_INFO("Done loading information, writing information out");
+
+    ros::spin();
 
     return 0;
 }
@@ -73,14 +78,13 @@ void imu_callback(sensor_msgs::Imu msg) {
         return;
     }
     // Else write the new reading to file
-    outfile_imu << msg.angular_velocity.x
-                << msg.angular_velocity.y
-                << msg.angular_velocity.z
-                << msg.linear_acceleration.x
-                << msg.linear_acceleration.y
-                << msg.linear_acceleration.z
-                << msg.header.stamp.toNSec()
-                << '\n';
+    outfile_imu << msg.angular_velocity.x << " "
+                << msg.angular_velocity.y << " "
+                << msg.angular_velocity.z << " "
+                << msg.linear_acceleration.x << " "
+                << msg.linear_acceleration.y << " "
+                << msg.linear_acceleration.z << " "
+                << msg.header.stamp.toNSec() << "\n";
 }
 
 /**
@@ -89,16 +93,23 @@ void imu_callback(sensor_msgs::Imu msg) {
  * We will append the image time to the timestamp of the folder
  */
 void image_callback(const sensor_msgs::ImageConstPtr& msg) {
-//    // Create filename
-//    char filename[128];
-//    std::sprintf(filename, "mat_%05d", count);
-//    // Write mat to file
-//    std::ofstream file(path+std::string(filename));
-//    if (file.is_open()) {
-//        file << mat << '\n';
-//    } else {
-//        ROS_ERROR("Unable to open file: %s", filename);
-//    }
+    if (!outfile_img.is_open()) {
+        ROS_ERROR("Unable to open imu file");
+        return;
+    }
+
+    // Create our folder timestamp
+    char filename[128];
+    std::sprintf(filename, "img_%ld.png", msg.get()->header.stamp.toNSec());
+
+    // Else write the new reading to file
+    outfile_img << msg.get()->height << " "
+                << msg.get()->width << " "
+                << "images/" << filename << "\n";
+
+    // Convert the image msg to open cv
+    cv_bridge::CvImagePtr cv_ptr = cv_bridge::toCvCopy(msg, "bgr8");
+    cv::imwrite(folder_images+filename, cv_ptr->image);
 }
 
 

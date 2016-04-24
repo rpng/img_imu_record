@@ -10,11 +10,12 @@ find_package(catkin REQUIRED COMPONENTS
 	roslib
 	std_msgs
 	sensor_msgs
+	cv_bridge
 )
 
 find_package(Eigen3 REQUIRED)
 find_package(Boost REQUIRED COMPONENTS thread system)
-find_package(OpenCV REQUIRED)
+find_package(OpenCV 3 REQUIRED)
 
 catkin_package(
   CATKIN_DEPENDS
@@ -42,7 +43,7 @@ add_executable(${PROJECT_NAME}
 # Link our libraries
 target_link_libraries(${PROJECT_NAME}
 	${catkin_LIBRARIES}
-    ${OpenCV_LIBRARIES}
+    ${OPENCV_LIBRARIES}
     ${Boost_LIBRARIES}
 )
 
