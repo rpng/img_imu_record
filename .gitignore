@@ -1,2 +1,8 @@
+# Developing IDE folders
 .idea
+
+# Ignore gedit stupid files
 *.*~
+
+# Ignore our recording output folder
+recordings
