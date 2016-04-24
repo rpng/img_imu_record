@@ -105,6 +105,7 @@ void image_callback(const sensor_msgs::ImageConstPtr& msg) {
     // Else write the new reading to file
     outfile_img << msg.get()->height << " "
                 << msg.get()->width << " "
+                << msg.get()->header.stamp.toNSec() << " "
                 << "images/" << filename << "\n";
 
     // Convert the image msg to open cv
