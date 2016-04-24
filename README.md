@@ -1,0 +1,3 @@
+# img_imu_record
+
+The main purpose of this package is to record incoming imu messages and image messages into a "flat file" format that can be used for offline proccessing. This is a ros package that will listen to `/camera/image_raw` and `/imu/data`. These two topics will be subscribed too, and when an event happens the data will be recorded to the output folder on disk. It will generate a image folder and a imu folder.
