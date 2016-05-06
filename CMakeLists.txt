@@ -9,6 +9,7 @@ find_package(catkin REQUIRED COMPONENTS
 	std_msgs
 	sensor_msgs
 	cv_bridge
+	message_filters
 )
 
 find_package(Boost REQUIRED COMPONENTS thread system)
@@ -22,6 +23,7 @@ catkin_package(
     roslib
     rosbag
 	sensor_msgs
+	message_filters
 )
 
 
